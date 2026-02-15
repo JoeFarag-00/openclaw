@@ -71,7 +71,15 @@ export function extractGeminiCliCredentials(): { clientId: string; clientSecret:
     }
 
     const resolvedPath = realpathSync(geminiPath);
-    const geminiCliDir = dirname(dirname(resolvedPath));
+    const binDir = dirname(resolvedPath);
+    let geminiCliDir = dirname(binDir);
+    
+    // Windows npm global installs place a shim in the npm bin dir (e.g. ...\npm\gemini.cmd)
+    // and the package itself at ...\npm\node_modules\@google\gemini-cli.
+    const npmGlobalCliDir = join(binDir, "node_modules", "@google", "gemini-cli");
+    if (existsSync(npmGlobalCliDir)) {
+      geminiCliDir = npmGlobalCliDir;
+    }
 
     const searchPaths = [
       join(
